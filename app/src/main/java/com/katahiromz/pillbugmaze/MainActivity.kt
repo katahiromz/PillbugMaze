@@ -1,4 +1,4 @@
-package com.katahiromz.krakra_ja_jp
+package com.katahiromz.pillbugmaze
 
 import android.annotation.SuppressLint
 import android.content.pm.PackageInfo
