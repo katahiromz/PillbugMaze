@@ -22,29 +22,39 @@ class MyWebChromeClient(private val activity: AppCompatActivity, private val lis
     WebChromeClient() {
 
     interface Listener {
+        // TODO: リスナインターフェースを追加
     }
 
+    // アクティビティからリソース文字列を取得。
     private fun getResString(resId: Int): String {
         return activity.getString(resId)
     }
 
+    // 権限を許可する。
     override fun onPermissionRequest(request: PermissionRequest?) {
         request?.grant(request.resources)
     }
 
+    // 表示中のダイアログ。
     private var dialog: MaterialDialog? = null
 
+    fun onPause() {
+        // TODO: 一時停止前の処理
+    }
     fun onResume() {
+        // TODO: 復帰後の処理
         if (dialog != null)
             dialog?.show()
     }
 
+    // JavaScriptのalert関数をラップする。
     override fun onJsAlert(
         view: WebView?,
         url: String?,
         message: String?,
         result: JsResult?
     ): Boolean {
+        // MaterialDialogを使用して実装する。
         val title = getResString(R.string.app_name)
         dialog = MaterialDialog(activity).show {
             title(text = title)
@@ -60,12 +70,14 @@ class MyWebChromeClient(private val activity: AppCompatActivity, private val lis
         return true
     }
 
+    // JavaScriptのconfirm関数をラップする。
     override fun onJsConfirm(
         view: WebView?,
         url: String?,
         message: String?,
         result: JsResult?
     ): Boolean {
+        // MaterialDialogを使用して実装する。
         val title = getResString(R.string.app_name)
         dialog = MaterialDialog(activity).show {
             title(text = title)
@@ -85,6 +97,7 @@ class MyWebChromeClient(private val activity: AppCompatActivity, private val lis
         return true
     }
 
+    // JavaScriptのprompt関数をラップする。
     @SuppressLint("CheckResult")
     override fun onJsPrompt(
         view: WebView?,
@@ -93,6 +106,7 @@ class MyWebChromeClient(private val activity: AppCompatActivity, private val lis
         defaultValue: String?,
         result: JsPromptResult?
     ): Boolean {
+        // MaterialDialogを使用して実装する。
         val title = getResString(R.string.app_name)
         var inputtedText: String? = null
         dialog = MaterialDialog(activity).show {
@@ -116,6 +130,7 @@ class MyWebChromeClient(private val activity: AppCompatActivity, private val lis
         return true
     }
 
+    // コンソールのメッセージを処理する。必要なければ消してもよい。
     override fun onConsoleMessage(consoleMessage: ConsoleMessage?): Boolean {
         if (consoleMessage != null) {
             val msg = consoleMessage.message()

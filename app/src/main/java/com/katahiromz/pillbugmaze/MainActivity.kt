@@ -20,11 +20,7 @@ import com.katahiromz.pillbugmaze.BuildConfig
 import com.katahiromz.pillbugmaze.R
 
 class MainActivity : AppCompatActivity() {
-
-    private var webView: WebView? = null
-    private var chromeClient: MyWebChromeClient? = null
-    private var webViewThread: WebViewThread? = null
-
+    // デバッグメッセージ出力。
     private fun logD(msg: String?, tr: Throwable? = null) {
         if (BuildConfig.DEBUG) {
             Log.d("MainActivity", msg, tr)
@@ -57,19 +53,24 @@ class MainActivity : AppCompatActivity() {
     ) {
         isGranted: Map<String?, Boolean?> ->
         if (isGranted.containsValue(false)) {
+            // 「権限が必要」とトーストで表示。
             showToast(getString(R.string.needs_rights))
         }
     }
 
+    //
+    // イベント関連。
+    //
     override fun onCreate(savedInstanceState: Bundle?) {
         logD("onCreate")
 
         // スプラッシュ画面を表示して切り替える。
         installSplashScreen()
 
+        // 親に通知。
         super.onCreate(savedInstanceState)
+        // ビューを設定。
         setContentView(R.layout.activity_main)
-
         // 画面上部のアクションバーを非表示にする。
         supportActionBar?.hide()
 
@@ -98,6 +99,7 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         logD("onResume")
         super.onResume()
+        MainRepository.load(this)
         webView?.onResume()
         chromeClient?.onResume()
     }
@@ -106,6 +108,8 @@ class MainActivity : AppCompatActivity() {
     override fun onPause() {
         logD("onPause")
         super.onPause()
+        MainRepository.save(this)
+        chromeClient?.onPause()
         webView?.onPause()
     }
 
@@ -113,6 +117,7 @@ class MainActivity : AppCompatActivity() {
     override fun onStop() {
         logD("onStop")
         super.onStop()
+        chromeClient?.onPause()
         webView?.onPause()
     }
 
@@ -127,15 +132,23 @@ class MainActivity : AppCompatActivity() {
     // WebView関連。
     //
 
+    private var webView: WebView? = null
+    private var chromeClient: MyWebChromeClient? = null
+    private var webViewThread: WebViewThread? = null
+
     // WebViewを初期化する。
     @SuppressLint("JavascriptInterface")
     fun initWebView() {
+        // WebViewを取得。
         webView = findViewById(R.id.web_view)
         webView?.post {
+            // Web設定を初期化。
             initWebSettings()
         }
         webView?.post {
+            // WebViewクライアントを作成。
             webView?.webViewClient = MyWebViewClient(object: MyWebViewClient.Listener {
+                // TODO: リスナ関数を追加
                 override fun onReceivedError(view: WebView?, request: WebResourceRequest?,
                                              error: WebResourceError?)
                 {
@@ -153,10 +166,16 @@ class MainActivity : AppCompatActivity() {
                 }
             })
 
+            // Chromeクライアントを作成。
             chromeClient = MyWebChromeClient(this, object: MyWebChromeClient.Listener {
+                // TODO: リスナの関数を追加。
             })
             webView?.webChromeClient = chromeClient
+
+            // Javascriptインターフェースを指定。
             webView?.addJavascriptInterface(chromeClient!!, "AndroidNative")
+
+            // URLを開く。
             webView?.loadUrl(getString(R.string.url))
         }
     }
@@ -171,6 +190,8 @@ class MainActivity : AppCompatActivity() {
         settings.mediaPlaybackRequiresUserGesture = false
         settings.allowContentAccess = true
         settings.allowFileAccess = true
+        val versionName = getVersionName()
+        settings.userAgentString += "/AndroidNative/$versionName/"
 
         if (BuildConfig.DEBUG) {
             // デバッグ時にはキャッシュを無効に。
@@ -178,13 +199,9 @@ class MainActivity : AppCompatActivity() {
             // Webデバッグを有効に。
             WebView.setWebContentsDebuggingEnabled(true)
         }
-        updateUserAgent(settings, getVersionName())
     }
 
-    private fun updateUserAgent(settings: WebSettings, versionName: String) {
-        settings.userAgentString += "/AndroidNative/$versionName/"
-    }
-
+    // バージョン名を取得。
     private fun getVersionName(): String {
         val appName: String = this.packageName
         val pm: PackageManager = this.packageManager
@@ -192,6 +209,7 @@ class MainActivity : AppCompatActivity() {
         return pi.versionName
     }
 
+    // WebView初期化スレッド。
     class WebViewThread(private val activity: MainActivity) : Thread() {
         override fun run() {
             Process.setThreadPriority(Process.THREAD_PRIORITY_MORE_FAVORABLE)

@@ -4,6 +4,7 @@ import android.webkit.*
 
 class MyWebViewClient(val listener: Listener) : WebViewClient() {
     interface Listener {
+        // TODO: リスナ関数を追加
         fun onReceivedError(view: WebView?, request: WebResourceRequest?, error: WebResourceError?)
         fun onReceivedHttpError(view: WebView?, request: WebResourceRequest?,
                                 errorResponse: WebResourceResponse?)
@@ -14,9 +15,14 @@ class MyWebViewClient(val listener: Listener) : WebViewClient() {
         view: WebView?,
         request: WebResourceRequest?
     ): Boolean {
+        // TODO: URLをオーバーライドすべきならtrueを返す
         return false
     }
 
+    //
+    // イベント処理。
+    // TODO: 必要なら処理を追加する。
+    //
     override fun onReceivedError(view: WebView?, request: WebResourceRequest?,
                                  error: WebResourceError?)
     {
