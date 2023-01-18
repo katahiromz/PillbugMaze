@@ -31,9 +31,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    //
-    // トースト。
-    //
+    // トーストを表示。
     private fun showToast(text: String, isLong: Boolean = false) {
         if (isLong) {
             Toast.makeText(this, text, Toast.LENGTH_LONG).show()
@@ -65,16 +63,20 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         logD("onCreate")
+
+        // スプラッシュ画面を表示して切り替える。
         installSplashScreen()
+
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        // 画面上部のアクションバーを非表示にする。
         supportActionBar?.hide()
-        if (false) {
-            initWebView()
-        } else {
-            webViewThread = WebViewThread(this)
-            webViewThread?.start()
-        }
+
+        // ウェブビュー初期化スレッド開始。
+        webViewThread = WebViewThread(this)
+        webViewThread?.start()
+
         // 権限を要求。
         for (perm in PERMISSIONS) {
             if (ActivityCompat.checkSelfPermission(this, perm) == PackageManager.PERMISSION_GRANTED) {
@@ -86,11 +88,13 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    // 開始。
     override fun onStart() {
         logD("onStart")
         super.onStart()
     }
 
+    // 復帰。
     override fun onResume() {
         logD("onResume")
         super.onResume()
@@ -98,28 +102,36 @@ class MainActivity : AppCompatActivity() {
         chromeClient?.onResume()
     }
 
+    // 一時停止。
     override fun onPause() {
         logD("onPause")
         super.onPause()
         webView?.onPause()
     }
 
+    // 停止。
     override fun onStop() {
         logD("onStop")
         super.onStop()
         webView?.onPause()
     }
 
+    // 破棄。
     override fun onDestroy() {
         logD("onDestroy")
         webView?.destroy()
         super.onDestroy()
     }
 
+    //
+    // WebView関連。
+    //
+
+    // WebViewを初期化する。
+    @SuppressLint("JavascriptInterface")
     fun initWebView() {
         webView = findViewById(R.id.web_view)
         webView?.post {
-            webView?.setBackgroundColor(0)
             initWebSettings()
         }
         webView?.post {
@@ -144,33 +156,33 @@ class MainActivity : AppCompatActivity() {
             chromeClient = MyWebChromeClient(this, object: MyWebChromeClient.Listener {
             })
             webView?.webChromeClient = chromeClient
-            webView?.addJavascriptInterface(chromeClient!!, "android")
+            webView?.addJavascriptInterface(chromeClient!!, "AndroidNative")
             webView?.loadUrl(getString(R.string.url))
         }
     }
 
+    // Web設定。
     @SuppressLint("SetJavaScriptEnabled")
     private fun initWebSettings() {
         val settings = webView?.settings
-        settings?.javaScriptEnabled = true
-        settings?.domStorageEnabled = true
-        settings?.mediaPlaybackRequiresUserGesture = false
+        if (settings == null) return
+        settings.javaScriptEnabled = true
+        settings.domStorageEnabled = true
+        settings.mediaPlaybackRequiresUserGesture = false
+        settings.allowContentAccess = true
+        settings.allowFileAccess = true
+
         if (BuildConfig.DEBUG) {
+            // デバッグ時にはキャッシュを無効に。
             settings?.cacheMode = WebSettings.LOAD_NO_CACHE
+            // Webデバッグを有効に。
             WebView.setWebContentsDebuggingEnabled(true)
         }
-        if (settings != null) {
-            val versionName = getVersionName()
-            updateUserAgent(settings, versionName)
-        }
+        updateUserAgent(settings, getVersionName())
     }
 
     private fun updateUserAgent(settings: WebSettings, versionName: String) {
-        var userAgent: String? = settings.userAgentString
-        if (userAgent != null) {
-            userAgent += "/Pillbug-native-app/$versionName/"
-            settings.userAgentString = userAgent
-        }
+        settings.userAgentString += "/AndroidNative/$versionName/"
     }
 
     private fun getVersionName(): String {
