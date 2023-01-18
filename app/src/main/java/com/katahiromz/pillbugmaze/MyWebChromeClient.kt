@@ -28,22 +28,8 @@ class MyWebChromeClient(private val activity: AppCompatActivity, private val lis
         return activity.getString(resId)
     }
 
-    public var myRequest: PermissionRequest? = null
-
     override fun onPermissionRequest(request: PermissionRequest?) {
-        if (request == null)
-            return
-        myRequest = request
-        val permissionCheck =
-            ContextCompat.checkSelfPermission(activity, Manifest.permission.RECORD_AUDIO)
-        if (permissionCheck != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(
-                activity, arrayOf(Manifest.permission.RECORD_AUDIO),
-                MainActivity.requestCodePermissionAudio
-            )
-        } else {
-            request.grant(request.resources)
-        }
+        request?.grant(request.resources)
     }
 
     private var dialog: MaterialDialog? = null

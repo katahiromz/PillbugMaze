@@ -1,5 +1,6 @@
 package com.katahiromz.pillbugmaze
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
@@ -9,27 +10,56 @@ import android.util.Log
 import android.view.View
 import android.webkit.*
 import android.widget.TextView
+import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import java.util.*
 import com.katahiromz.pillbugmaze.BuildConfig
 import com.katahiromz.pillbugmaze.R
 
-class MainActivity : AppCompatActivity(), ValueCallback<String> {
-
-    companion object {
-        const val requestCodePermissionAudio = 1
-    }
+class MainActivity : AppCompatActivity() {
 
     private var webView: WebView? = null
     private var chromeClient: MyWebChromeClient? = null
     private var webViewThread: WebViewThread? = null
 
-    private var resultString = ""
-
     private fun logD(msg: String?, tr: Throwable? = null) {
         if (BuildConfig.DEBUG) {
             Log.d("MainActivity", msg, tr)
+        }
+    }
+
+    //
+    // トースト。
+    //
+    private fun showToast(text: String, isLong: Boolean = false) {
+        if (isLong) {
+            Toast.makeText(this, text, Toast.LENGTH_LONG).show()
+        } else {
+            Toast.makeText(this, text, Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    //
+    // 権限関連。
+    //
+    companion object {
+        const val REQUEST_PERMISSIONS_VALUE = 1
+    }
+    private var PERMISSIONS = arrayOf(
+        // TODO: 必要な権限を追加して下さい
+        Manifest.permission.VIBRATE,
+        //Manifest.permission.WRITE_EXTERNAL_STORAGE,
+        //Manifest.permission.CAMERA
+    )
+    private val requestPermissionLauncher = registerForActivityResult(
+            ActivityResultContracts.RequestMultiplePermissions()
+    ) {
+        isGranted: Map<String?, Boolean?> ->
+        if (isGranted.containsValue(false)) {
+            showToast(getString(R.string.needs_rights))
         }
     }
 
@@ -44,6 +74,15 @@ class MainActivity : AppCompatActivity(), ValueCallback<String> {
         } else {
             webViewThread = WebViewThread(this)
             webViewThread?.start()
+        }
+        // 権限を要求。
+        for (perm in PERMISSIONS) {
+            if (ActivityCompat.checkSelfPermission(this, perm) == PackageManager.PERMISSION_GRANTED) {
+                // granted
+            } else {
+                // need to request
+                requestPermissionLauncher.launch(PERMISSIONS)
+            }
         }
     }
 
@@ -75,30 +114,6 @@ class MainActivity : AppCompatActivity(), ValueCallback<String> {
         logD("onDestroy")
         webView?.destroy()
         super.onDestroy()
-    }
-
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<out String>,
-        grantResults: IntArray)
-    {
-        if (requestCode == requestCodePermissionAudio) {
-            if (grantResults.isNotEmpty()) {
-                if (grantResults[0] != PackageManager.PERMISSION_GRANTED) {
-                    logD("Not PERMISSION_GRANTED!")
-                } else {
-                    val myRequest = chromeClient?.myRequest
-                    if (myRequest != null) {
-                        myRequest.grant(myRequest.resources)
-                    }
-                }
-            }
-        }
-    }
-
-    // ValueCallback<String>
-    override fun onReceiveValue(value: String) {
-        resultString = value
     }
 
     fun initWebView() {
