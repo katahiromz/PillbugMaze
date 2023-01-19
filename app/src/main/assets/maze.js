@@ -388,6 +388,22 @@ function showToastOrAlert(text, isLong = false){
         alert(text);
 }
 
+// 可能ならばSnackbarを表示する。
+function showSnackbar(text, isLong = false){
+    try{
+        AndroidNative.showSnackbar(text, isLong);
+        return true;
+    }catch(e){
+        return false;
+    }
+}
+
+// Snackbarかalert。
+function showSnackbarOrAlert(text, isLong = false){
+    if (!showSnackbar(text, isLong))
+        alert(text);
+}
+
 // メイン処理。
 function main()
 {
@@ -538,9 +554,9 @@ function main()
         stage = parseInt(localStorage.getItem('stage'));
     }
     if (DEBUGGING && false){
-        stage = 101;
-        localStorage.removeItem('key');
+        stage = 51;
         localStorage.setItem('key', '1');
+        localStorage.removeItem('key');
     }
     new_stage();
 
@@ -806,7 +822,7 @@ function main()
                 delta_iy = 0;
             }
             if (!localStorage.getItem('key') && ch == MAP_DOOR){
-                showToastOrAlert("ドアのカギが開かない!", true);
+                showSnackbarOrAlert("ドアのカギが開かない!", true);
                 delta_ix = delta_iy = 0;
 
                 // ボタンの状態を初期化する。
@@ -833,7 +849,7 @@ function main()
                 if (ix == key_ix && iy == key_iy){
                     key_ix = key_iy = -1;
                     localStorage.setItem('key', '1');
-                    showToastOrAlert("ドアのカギを手に入れた", true);
+                    showSnackbarOrAlert("ドアのカギを手に入れた", true);
 
                     // ボタンの状態を初期化する。
                     resetButtons();

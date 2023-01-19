@@ -6,12 +6,14 @@ import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.os.Process
+import android.view.View
 import android.webkit.*
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import com.google.android.material.snackbar.Snackbar
 import java.util.*
 import timber.log.Timber
 
@@ -30,6 +32,17 @@ class MainActivity : AppCompatActivity() {
             Toast.makeText(this, text, Toast.LENGTH_LONG).show()
         } else {
             Toast.makeText(this, text, Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    // Snackbarを表示。
+    @JavascriptInterface
+    fun showSnackbar(text: String, isLong: Boolean = false) {
+        val view = findViewById<View>(android.R.id.content)
+        if (isLong) {
+            Snackbar.make(view, text, Snackbar.LENGTH_LONG).show()
+        } else {
+            Snackbar.make(view, text, Snackbar.LENGTH_SHORT).show()
         }
     }
 
