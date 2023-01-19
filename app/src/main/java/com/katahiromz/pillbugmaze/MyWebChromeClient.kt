@@ -86,7 +86,6 @@ class MyWebChromeClient(private val activity: AppCompatActivity, private val lis
     }
 
     // JavaScriptのprompt関数をラップする。
-    @SuppressLint("CheckResult")
     override fun onJsPrompt(
         view: WebView?,
         url: String?,
@@ -96,13 +95,14 @@ class MyWebChromeClient(private val activity: AppCompatActivity, private val lis
     ): Boolean {
         // MaterialDialogを使用して実装する。
         val title = getResString(R.string.app_name)
-        var inputtedText: String? = null
         val ok_text = getResString(R.string.ok)
         val cancel_text =  getResString(R.string.cancel)
+        val hint_text = getResString(R.string.prompt_hint)
+        var inputtedText: String? = null
         dialog = MaterialDialog(activity).show {
             title(text = title)
             message(text = message)
-            input(hint = getResString(R.string.prompt_hint), prefill = defaultValue) { _, text ->
+            input(hint = hint_text, prefill = defaultValue) { _, text ->
                 inputtedText = text.toString()
             }
             positiveButton(text = ok_text) {
