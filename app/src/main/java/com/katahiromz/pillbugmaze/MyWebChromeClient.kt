@@ -107,9 +107,11 @@ class MyWebChromeClient(private val activity: AppCompatActivity, private val lis
             }
             positiveButton(text = ok_text) {
                 result?.confirm(inputtedText ?: "")
+                dialog = null
             }
             negativeButton(text = cancel_text) {
                 result?.cancel()
+                dialog = null
             }
             cancelable(false)
             cancelOnTouchOutside(false)
