@@ -18,12 +18,13 @@ import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import java.util.*
 import com.katahiromz.pillbugmaze.BuildConfig
 import com.katahiromz.pillbugmaze.R
+import timber.log.Timber
 
 class MainActivity : AppCompatActivity() {
-    // デバッグメッセージ出力。
-    private fun logD(msg: String?, tr: Throwable? = null) {
+    // デバッグログにTimberを使用。
+    fun initTimber() {
         if (BuildConfig.DEBUG) {
-            Log.d("MainActivity", msg, tr)
+            Timber.plant(Timber.DebugTree())
         }
     }
 
@@ -63,7 +64,7 @@ class MainActivity : AppCompatActivity() {
     // イベント関連。
     //
     override fun onCreate(savedInstanceState: Bundle?) {
-        logD("onCreate")
+        Timber.i("onCreate")
 
         // スプラッシュ画面を表示して切り替える。
         installSplashScreen()
@@ -88,17 +89,19 @@ class MainActivity : AppCompatActivity() {
                 requestPermissionLauncher.launch(PERMISSIONS)
             }
         }
+
+        initTimber()
     }
 
     // 開始。
     override fun onStart() {
-        logD("onStart")
+        Timber.i("onStart")
         super.onStart()
     }
 
     // 復帰。
     override fun onResume() {
-        logD("onResume")
+        Timber.i("onResume")
         super.onResume()
         MainRepository.load(this)
         webView?.onResume()
@@ -107,7 +110,7 @@ class MainActivity : AppCompatActivity() {
 
     // 一時停止。
     override fun onPause() {
-        logD("onPause")
+        Timber.i("onPause")
         super.onPause()
         MainRepository.save(this)
         chromeClient?.onPause()
@@ -116,7 +119,7 @@ class MainActivity : AppCompatActivity() {
 
     // 停止。
     override fun onStop() {
-        logD("onStop")
+        Timber.i("onStop")
         super.onStop()
         chromeClient?.onPause()
         webView?.onPause()
@@ -124,7 +127,7 @@ class MainActivity : AppCompatActivity() {
 
     // 破棄。
     override fun onDestroy() {
-        logD("onDestroy")
+        Timber.i("onDestroy")
         webView?.destroy()
         super.onDestroy()
     }
@@ -153,17 +156,17 @@ class MainActivity : AppCompatActivity() {
                 override fun onReceivedError(view: WebView?, request: WebResourceRequest?,
                                              error: WebResourceError?)
                 {
-                    logD("onReceivedError")
+                    Timber.i("onReceivedError")
                 }
 
                 override fun onReceivedHttpError(view: WebView?, request: WebResourceRequest?,
                                                  errorResponse: WebResourceResponse?)
                 {
-                    logD("onReceivedHttpError")
+                    Timber.i("onReceivedHttpError")
                 }
 
                 override fun onPageFinished(view: WebView?, url: String?) {
-                    logD("onPageFinished")
+                    Timber.i("onPageFinished")
                 }
             })
 
@@ -196,7 +199,7 @@ class MainActivity : AppCompatActivity() {
 
         if (BuildConfig.DEBUG) {
             // デバッグ時にはキャッシュを無効に。
-            settings?.cacheMode = WebSettings.LOAD_NO_CACHE
+            settings.cacheMode = WebSettings.LOAD_NO_CACHE
             // Webデバッグを有効に。
             WebView.setWebContentsDebuggingEnabled(true)
         }
