@@ -372,6 +372,15 @@ function getRouteTurns(map)
     return turns;
 }
 
+// 可能ならばトーストを表示する。
+function showToast(text, isLong = false){
+    try{
+        AndroidNative.showToast(text, isLong);
+    }catch(e){
+        ;
+    }
+}
+
 // メイン処理。
 function main()
 {

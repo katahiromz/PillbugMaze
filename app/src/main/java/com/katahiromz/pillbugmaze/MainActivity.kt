@@ -28,7 +28,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     // トーストを表示。
-    private fun showToast(text: String, isLong: Boolean = false) {
+    @JavascriptInterface
+    fun showToast(text: String, isLong: Boolean = false) {
         if (isLong) {
             Toast.makeText(this, text, Toast.LENGTH_LONG).show()
         } else {
@@ -173,7 +174,7 @@ class MainActivity : AppCompatActivity() {
             webView?.webChromeClient = chromeClient
 
             // Javascriptインターフェースを指定。
-            webView?.addJavascriptInterface(chromeClient!!, "AndroidNative")
+            webView?.addJavascriptInterface(this, "AndroidNative")
 
             // URLを開く。
             webView?.loadUrl(getString(R.string.url))
