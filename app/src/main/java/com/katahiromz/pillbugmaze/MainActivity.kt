@@ -6,18 +6,13 @@ import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.os.Process
-import android.util.Log
-import android.view.View
 import android.webkit.*
-import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import java.util.*
-import com.katahiromz.pillbugmaze.BuildConfig
-import com.katahiromz.pillbugmaze.R
 import timber.log.Timber
 
 class MainActivity : AppCompatActivity() {

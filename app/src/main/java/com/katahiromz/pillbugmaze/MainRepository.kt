@@ -2,8 +2,6 @@ package com.katahiromz.pillbugmaze
 
 import android.content.Context
 import android.content.SharedPreferences
-import org.json.JSONArray
-import java.util.Collections.emptyList
 
 class MainRepository {
 

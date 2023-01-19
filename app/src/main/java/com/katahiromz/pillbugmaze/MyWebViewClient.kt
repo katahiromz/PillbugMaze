@@ -4,7 +4,7 @@ import android.webkit.*
 
 class MyWebViewClient(val listener: Listener) : WebViewClient() {
     interface Listener {
-        // TODO: リスナ関数を追加
+        // TODO: リスナインターフェイスを追加
         fun onReceivedError(view: WebView?, request: WebResourceRequest?, error: WebResourceError?)
         fun onReceivedHttpError(view: WebView?, request: WebResourceRequest?,
                                 errorResponse: WebResourceResponse?)
