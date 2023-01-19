@@ -860,11 +860,14 @@ function main()
                         if (getMapCell(map, ix, iy) == MAP_DOOR){
                             setMapCell(map, ix, iy, MAP_ROOTE);
                             localStorage.removeItem('key');
-                            alert("ドアのカギが開いた！\n\nダンゴムシは研究所から脱出し、安住の地で幸せに暮らしたとさ。ゲームクリア!!");
                             setTimeout(function(){
-                                stage = 1;
-                                new_stage(0);
-                            }, 1000);
+                                alert("ドアのカギが開いた！");
+                                alert("ダンゴムシは研究所から脱出し、安住の地で幸せに暮らしたとさ。ゲームクリア!!");
+                                setTimeout(function(){
+                                    stage = 1;
+                                    new_stage(0);
+                                }, 1000);
+                            }, 500);
                         }
                     }
                 }

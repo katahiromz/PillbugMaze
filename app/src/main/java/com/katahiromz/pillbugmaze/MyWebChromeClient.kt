@@ -7,6 +7,7 @@ import androidx.appcompat.app.AppCompatActivity
 import com.afollestad.materialdialogs.MaterialDialog
 import com.afollestad.materialdialogs.input.input
 import com.afollestad.materialdialogs.lifecycle.lifecycleOwner
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 
 class MyWebChromeClient(private val activity: AppCompatActivity, private val listener: Listener) :
     WebChromeClient() {
@@ -33,8 +34,9 @@ class MyWebChromeClient(private val activity: AppCompatActivity, private val lis
     }
     fun onResume() {
         // TODO: 復帰後の処理
-        if (dialog != null)
+        if (dialog != null) {
             dialog?.show()
+        }
     }
 
     // JavaScriptのalert関数をラップする。
@@ -44,19 +46,17 @@ class MyWebChromeClient(private val activity: AppCompatActivity, private val lis
         message: String?,
         result: JsResult?
     ): Boolean {
-        // MaterialDialogを使用して実装する。
+        // MaterialAlertDialogを使用して実装する。
         val title = getResString(R.string.app_name)
-        dialog = MaterialDialog(activity).show {
-            title(text = title)
-            message(text = message)
-            positiveButton(text = getResString(R.string.ok)) {
-                dialog = null
+        val ok_text = getResString(R.string.ok)
+        MaterialAlertDialogBuilder(activity)
+            .setTitle(title)
+            .setMessage(message)
+            .setPositiveButton(ok_text) { _, _ ->
+                result?.confirm()
             }
-            cancelable(false)
-            cancelOnTouchOutside(false)
-            lifecycleOwner(activity)
-        }
-        result?.confirm()
+            .setCancelable(false)
+            .show()
         return true
     }
 
@@ -67,23 +67,21 @@ class MyWebChromeClient(private val activity: AppCompatActivity, private val lis
         message: String?,
         result: JsResult?
     ): Boolean {
-        // MaterialDialogを使用して実装する。
+        // MaterialAlertDialogを使用して実装する。
         val title = getResString(R.string.app_name)
-        dialog = MaterialDialog(activity).show {
-            title(text = title)
-            message(text = message)
-            positiveButton(text = getResString(R.string.ok)) {
+        val ok_text = getResString(R.string.ok)
+        val cancel_text = getResString(R.string.cancel)
+        MaterialAlertDialogBuilder(activity)
+            .setTitle(title)
+            .setMessage(message)
+            .setPositiveButton(ok_text) { _, _ ->
                 result?.confirm()
-                dialog = null
             }
-            negativeButton(text = getResString(R.string.cancel)) {
+            .setNegativeButton(cancel_text) { _, _ ->
                 result?.cancel()
-                dialog = null
             }
-            cancelable(false)
-            cancelOnTouchOutside(false)
-            lifecycleOwner(activity)
-        }
+            .setCancelable(false)
+            .show()
         return true
     }
 
@@ -99,19 +97,19 @@ class MyWebChromeClient(private val activity: AppCompatActivity, private val lis
         // MaterialDialogを使用して実装する。
         val title = getResString(R.string.app_name)
         var inputtedText: String? = null
+        val ok_text = getResString(R.string.ok)
+        val cancel_text =  getResString(R.string.cancel)
         dialog = MaterialDialog(activity).show {
             title(text = title)
             message(text = message)
             input(hint = getResString(R.string.prompt_hint), prefill = defaultValue) { _, text ->
                 inputtedText = text.toString()
             }
-            positiveButton(text = getResString(R.string.ok)) {
+            positiveButton(text = ok_text) {
                 result?.confirm(inputtedText ?: "")
-                dialog = null
             }
-            negativeButton(text = getResString(R.string.cancel)) {
+            negativeButton(text = cancel_text) {
                 result?.cancel()
-                dialog = null
             }
             cancelable(false)
             cancelOnTouchOutside(false)
