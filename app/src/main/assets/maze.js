@@ -376,9 +376,16 @@ function getRouteTurns(map)
 function showToast(text, isLong = false){
     try{
         AndroidNative.showToast(text, isLong);
+        return true;
     }catch(e){
-        ;
+        return false;
     }
+}
+
+// トーストかalert。
+function showToastOrAlert(text, isLong = false){
+    if (!showToast(text, isLong))
+        alert(text);
 }
 
 // メイン処理。
@@ -529,6 +536,11 @@ function main()
     // ステージの初期化。
     if (localStorage.getItem('stage')){
         stage = parseInt(localStorage.getItem('stage'));
+    }
+    if (DEBUGGING && false){
+        stage = 101;
+        localStorage.removeItem('key');
+        localStorage.setItem('key', '1');
     }
     new_stage();
 
@@ -794,7 +806,7 @@ function main()
                 delta_iy = 0;
             }
             if (!localStorage.getItem('key') && ch == MAP_DOOR){
-                alert("ドアのカギが開かない!");
+                showToastOrAlert("ドアのカギが開かない!", true);
                 delta_ix = delta_iy = 0;
 
                 // ボタンの状態を初期化する。
@@ -821,7 +833,7 @@ function main()
                 if (ix == key_ix && iy == key_iy){
                     key_ix = key_iy = -1;
                     localStorage.setItem('key', '1');
-                    alert("ドアのカギを手に入れた");
+                    showToastOrAlert("ドアのカギを手に入れた", true);
 
                     // ボタンの状態を初期化する。
                     resetButtons();
@@ -848,15 +860,11 @@ function main()
                         if (getMapCell(map, ix, iy) == MAP_DOOR){
                             setMapCell(map, ix, iy, MAP_ROOTE);
                             localStorage.removeItem('key');
+                            alert("ドアのカギが開いた！\n\nダンゴムシは研究所から脱出し、安住の地で幸せに暮らしたとさ。ゲームクリア!!");
                             setTimeout(function(){
-                                alert("ドアのカギが開いた！");
-                                setTimeout(function(){
-                                    alert("ダンゴムシは研究所から脱出し、安住の地で幸せに暮らしたとさ");
-                                    alert("ゲームクリア!!");
-                                    stage = 1;
-                                    new_stage(0);
-                                }, 1000);
-                            }, 500);
+                                stage = 1;
+                                new_stage(0);
+                            }, 1000);
                         }
                     }
                 }
