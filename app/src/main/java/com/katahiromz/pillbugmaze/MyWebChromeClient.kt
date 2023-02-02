@@ -1,44 +1,70 @@
 package com.katahiromz.pillbugmaze
 
+import android.Manifest
 import android.util.Log
 import android.webkit.*
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat.shouldShowRequestPermissionRationale
+import androidx.core.content.PermissionChecker
 import com.afollestad.materialdialogs.MaterialDialog
 import com.afollestad.materialdialogs.input.input
 import com.afollestad.materialdialogs.lifecycle.lifecycleOwner
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import timber.log.Timber
 
 class MyWebChromeClient(private val activity: AppCompatActivity, private val listener: Listener) :
     WebChromeClient() {
 
-    interface Listener {
-        // TODO: リスナインターフェースを追加
+    companion object {
+        const val MY_WEBVIEW_REQUEST_CODE_01 = 999
+        // TODO: Add more request
     }
 
-    // アクティビティからリソース文字列を取得。
+    interface Listener {
+        fun onChromePermissionRequest(permissions: Array<String>, requestCode: Int)
+        fun makeToast(text: String, typeOfToast: Int)
+        fun makeSnackbar(text: String, typeOfSnack: Int)
+    }
+
     private fun getResString(resId: Int): String {
         return activity.getString(resId)
     }
 
-    // 権限を許可する。
+    /////////////////////////////////////////////////////////////////////
+    // Permissions-related
+
     override fun onPermissionRequest(request: PermissionRequest?) {
-        request?.grant(request.resources)
-    }
-
-    // 表示中のダイアログ。
-    private var dialog: MaterialDialog? = null
-
-    fun onPause() {
-        // TODO: 一時停止前の処理
-    }
-    fun onResume() {
-        // TODO: 復帰後の処理
-        if (dialog != null) {
-            dialog?.show()
+        if (false) {
+            // Audio record request
+            val audioCheck =
+                    PermissionChecker.checkSelfPermission(activity, Manifest.permission.RECORD_AUDIO)
+            when (audioCheck) {
+                PermissionChecker.PERMISSION_GRANTED,
+                PermissionChecker.PERMISSION_DENIED_APP_OP -> {
+                    request?.grant(request.resources)
+                }
+                PermissionChecker.PERMISSION_DENIED -> {
+                    val audioRational =
+                            shouldShowRequestPermissionRationale(
+                                    activity, Manifest.permission.RECORD_AUDIO)
+                    if (audioRational) {
+                        listener.onChromePermissionRequest(
+                                arrayOf(Manifest.permission.RECORD_AUDIO),
+                                MY_WEBVIEW_REQUEST_CODE_01)
+                    }
+                }
+                else -> {
+                    require(false, { "PermissionChecker" })
+                }
+            }
         }
+        // TODO: Add more request
     }
 
-    // JavaScriptのalert関数をラップする。
+    /////////////////////////////////////////////////////////////////////
+    // JavaScript interface-related
+
+    // Wrap JavaScript alert function
     override fun onJsAlert(
         view: WebView?,
         url: String?,
@@ -59,7 +85,7 @@ class MyWebChromeClient(private val activity: AppCompatActivity, private val lis
         return true
     }
 
-    // JavaScriptのconfirm関数をラップする。
+    // Wrap JavaScript confirm function
     override fun onJsConfirm(
         view: WebView?,
         url: String?,
@@ -84,7 +110,13 @@ class MyWebChromeClient(private val activity: AppCompatActivity, private val lis
         return true
     }
 
-    // JavaScriptのprompt関数をラップする。
+    private var modalDialog: MaterialDialog? = null
+    fun onResume() {
+        if (modalDialog != null)
+            modalDialog?.show()
+    }
+
+    // Wrap JavaScript prompt function
     override fun onJsPrompt(
         view: WebView?,
         url: String?,
@@ -92,25 +124,21 @@ class MyWebChromeClient(private val activity: AppCompatActivity, private val lis
         defaultValue: String?,
         result: JsPromptResult?
     ): Boolean {
-        // MaterialDialogを使用して実装する。
         val title = getResString(R.string.app_name)
-        val ok_text = getResString(R.string.ok)
-        val cancel_text =  getResString(R.string.cancel)
-        val hint_text = getResString(R.string.prompt_hint)
         var inputtedText: String? = null
-        dialog = MaterialDialog(activity).show {
+        modalDialog = MaterialDialog(activity).show {
             title(text = title)
             message(text = message)
-            input(hint = hint_text, prefill = defaultValue) { _, text ->
+            input(hint = getResString(R.string.prompt_hint), prefill = defaultValue) { _, text ->
                 inputtedText = text.toString()
             }
-            positiveButton(text = ok_text) {
+            positiveButton(text = getResString(R.string.ok)) {
                 result?.confirm(inputtedText ?: "")
-                dialog = null
+                modalDialog = null
             }
-            negativeButton(text = cancel_text) {
+            negativeButton(text = getResString(R.string.cancel)) {
                 result?.cancel()
-                dialog = null
+                modalDialog = null
             }
             cancelable(false)
             cancelOnTouchOutside(false)
@@ -119,14 +147,14 @@ class MyWebChromeClient(private val activity: AppCompatActivity, private val lis
         return true
     }
 
-    // コンソールのメッセージを処理する。必要なければ消してもよい。
+    // JavaScriptのコンソール出力を制御する。
     override fun onConsoleMessage(consoleMessage: ConsoleMessage?): Boolean {
-        if (consoleMessage != null) {
-            val msg = consoleMessage.message()
-            if (BuildConfig.DEBUG) {
+        if (BuildConfig.DEBUG) {
+            if (consoleMessage != null) {
+                val msg = consoleMessage.message()
                 val line = consoleMessage.lineNumber()
                 val src = consoleMessage.sourceId()
-                Log.d("console", "$msg at Line $line of $src")
+                Timber.d("console: $msg at Line $line of $src")
             }
         }
         return super.onConsoleMessage(consoleMessage)

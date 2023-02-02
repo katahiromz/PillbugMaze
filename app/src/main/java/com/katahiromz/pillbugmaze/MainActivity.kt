@@ -17,150 +17,190 @@ import com.google.android.material.snackbar.Snackbar
 import java.util.*
 import timber.log.Timber
 
-class MainActivity : AppCompatActivity() {
-    // デバッグログにTimberを使用。
+class MainActivity : AppCompatActivity(), ValueCallback<String>,
+        ActivityCompat.OnRequestPermissionsResultCallback {
+    /////////////////////////////////////////////////////////////////////
+    // Common
+
+    // Use Timber for debugging log
     fun initTimber() {
         if (BuildConfig.DEBUG) {
             Timber.plant(Timber.DebugTree())
         }
     }
 
-    // トーストを表示。
-    @JavascriptInterface
-    fun showToast(text: String, isLong: Boolean = false) {
-        if (isLong) {
-            Toast.makeText(this, text, Toast.LENGTH_LONG).show()
-        } else {
-            Toast.makeText(this, text, Toast.LENGTH_SHORT).show()
-        }
-    }
-
-    // Snackbarを表示。
-    @JavascriptInterface
-    fun showSnackbar(text: String, isLong: Boolean = false) {
-        val view = findViewById<View>(android.R.id.content)
-        if (isLong) {
-            Snackbar.make(view, text, Snackbar.LENGTH_LONG).show()
-        } else {
-            Snackbar.make(view, text, Snackbar.LENGTH_SHORT).show()
-        }
-    }
-
-    //
-    // 権限関連。
-    //
+    // Constants
     companion object {
-        const val REQUEST_PERMISSIONS_VALUE = 1
+        // Toast types (for makeToast)
+        const val SHORT_TOAST = 0
+        const val LONG_TOAST = 1
+
+        // Snack types (for makeSnackbar)
+        const val SHORT_SNACK = 0
+        const val LONG_SNACK = 1
+        const val ACTION_SNACK_OK = 2
+        // TODO: Add more snack
     }
-    private var PERMISSIONS = arrayOf(
-        // TODO: 必要な権限を追加して下さい
-        Manifest.permission.VIBRATE,
-        //Manifest.permission.WRITE_EXTERNAL_STORAGE,
-        //Manifest.permission.CAMERA
-    )
-    private val requestPermissionLauncher = registerForActivityResult(
-            ActivityResultContracts.RequestMultiplePermissions()
-    ) {
-        isGranted: Map<String?, Boolean?> ->
-        if (isGranted.containsValue(false)) {
-            // 「権限が必要」とトーストで表示。
-            showToast(getString(R.string.needs_rights))
+
+    // Display Toast (a messaging control)
+    @JavascriptInterface
+    fun makeToast(text: String, typeOfToast: Int) {
+        when (typeOfToast) {
+            SHORT_TOAST -> {
+                lastToast = Toast.makeText(this, text, Toast.LENGTH_SHORT)
+                lastToast?.show()
+            }
+            LONG_TOAST -> {
+                lastToast = Toast.makeText(this, text, Toast.LENGTH_LONG)
+                lastToast?.show()
+            }
+            else -> {
+                require(false, { "typeOfToast: $typeOfToast" })
+            }
+        }
+    }
+    var lastToast : Toast? = null
+    // Cancel Toast
+    fun cancelToast() {
+        if (lastToast != null) {
+            lastToast?.cancel()
+            lastToast = null
         }
     }
 
-    //
-    // イベント関連。
-    //
+    // Display Snackbar (another messaging control)
+    @JavascriptInterface
+    fun makeSnackbar(text: String, typeOfSnack: Int) {
+        val view = findViewById<View>(android.R.id.content)
+        when (typeOfSnack) {
+            SHORT_SNACK -> {
+                lastSnackbar = Snackbar.make(view, text, Snackbar.LENGTH_SHORT)
+                lastSnackbar?.show()
+            }
+            LONG_SNACK -> {
+                lastSnackbar = Snackbar.make(view, text, Snackbar.LENGTH_LONG)
+                lastSnackbar?.show()
+            }
+            ACTION_SNACK_OK -> {
+                lastSnackbar = Snackbar.make(view, text, Snackbar.LENGTH_INDEFINITE)
+                val buttonText = getString(R.string.ok)
+                lastSnackbar?.setAction(buttonText) {
+                    // TODO: Add action
+                }
+                lastSnackbar?.show()
+            }
+            // TODO: Add more Snack
+            else -> {
+                require(false, { "typeOfSnack: $typeOfSnack" })
+            }
+        }
+    }
+    var lastSnackbar : Snackbar? = null
+    fun cancelSnackbar() {
+        if (lastSnackbar != null) {
+            lastSnackbar?.dismiss()
+            lastSnackbar = null
+        }
+    }
+
+    /////////////////////////////////////////////////////////////////////
+    // Permissions-related
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        var grantedAll = true
+        // Audio request
+        if (requestCode == MyWebChromeClient.MY_WEBVIEW_REQUEST_CODE_01) {
+            for (result in grantResults) {
+                if (result != PackageManager.PERMISSION_GRANTED) {
+                    grantedAll = false
+                }
+            }
+            if (grantedAll) {
+                // Permission has been granted.
+                // TODO: Do something
+                //webView?.reload()
+            } else {
+                // Permission request was denied.
+                makeSnackbar(getString(R.string.no_permissions), ACTION_SNACK_OK)
+            }
+        }
+        // TODO: Add more request
+    }
+
+    /////////////////////////////////////////////////////////////////////
+    // event handlers
+
     override fun onCreate(savedInstanceState: Bundle?) {
         Timber.i("onCreate")
-
-        // スプラッシュ画面を表示して切り替える。
         installSplashScreen()
-
-        // 親に通知。
         super.onCreate(savedInstanceState)
-        // ビューを設定。
         setContentView(R.layout.activity_main)
-        // 画面上部のアクションバーを非表示にする。
         supportActionBar?.hide()
 
-        // ウェブビュー初期化スレッド開始。
+        // Initialize WebView
         webViewThread = WebViewThread(this)
         webViewThread?.start()
 
-        // 権限を要求。
-        for (perm in PERMISSIONS) {
-            if (ActivityCompat.checkSelfPermission(this, perm) == PackageManager.PERMISSION_GRANTED) {
-                // granted
-            } else {
-                // need to request
-                requestPermissionLauncher.launch(PERMISSIONS)
-            }
-        }
-
+        // Initialize Timber
         initTimber()
     }
 
-    // 開始。
     override fun onStart() {
         Timber.i("onStart")
         super.onStart()
     }
 
-    // 復帰。
     override fun onResume() {
         Timber.i("onResume")
         super.onResume()
-        MainRepository.load(this)
         webView?.onResume()
         chromeClient?.onResume()
     }
 
-    // 一時停止。
     override fun onPause() {
         Timber.i("onPause")
         super.onPause()
-        MainRepository.save(this)
-        chromeClient?.onPause()
         webView?.onPause()
     }
 
-    // 停止。
     override fun onStop() {
         Timber.i("onStop")
         super.onStop()
-        chromeClient?.onPause()
         webView?.onPause()
     }
 
-    // 破棄。
     override fun onDestroy() {
         Timber.i("onDestroy")
         webView?.destroy()
         super.onDestroy()
     }
 
-    //
-    // WebView関連。
-    //
+    // ValueCallback<String>
+    override fun onReceiveValue(value: String) {
+        resultString = value
+    }
+    private var resultString = ""
+
+    /////////////////////////////////////////////////////////////////////
+    // WebView-related
 
     private var webView: WebView? = null
     private var chromeClient: MyWebChromeClient? = null
     private var webViewThread: WebViewThread? = null
 
-    // WebViewを初期化する。
-    @SuppressLint("JavascriptInterface")
     fun initWebView() {
-        // WebViewを取得。
         webView = findViewById(R.id.web_view)
         webView?.post {
-            // Web設定を初期化。
+            webView?.setBackgroundColor(0)
             initWebSettings()
         }
         webView?.post {
-            // WebViewクライアントを作成。
             webView?.webViewClient = MyWebViewClient(object: MyWebViewClient.Listener {
-                // TODO: リスナ関数を追加
                 override fun onReceivedError(view: WebView?, request: WebResourceRequest?,
                                              error: WebResourceError?)
                 {
@@ -178,42 +218,41 @@ class MainActivity : AppCompatActivity() {
                 }
             })
 
-            // Chromeクライアントを作成。
             chromeClient = MyWebChromeClient(this, object: MyWebChromeClient.Listener {
-                // TODO: リスナの関数を追加。
+                override fun onChromePermissionRequest(permissions: Array<String>, requestCode: Int) {
+                    requestPermissions(permissions, requestCode)
+                }
+                override fun makeToast(text: String, typeOfToast: Int) {
+                    this.makeToast(text, typeOfToast)
+                }
+                override fun makeSnackbar(text: String, typeOfSnack: Int) {
+                    this.makeSnackbar(text, typeOfSnack)
+                }
             })
             webView?.webChromeClient = chromeClient
-
-            // Javascriptインターフェースを指定。
             webView?.addJavascriptInterface(this, "AndroidNative")
-
-            // URLを開く。
             webView?.loadUrl(getString(R.string.url))
         }
     }
 
-    // Web設定。
     @SuppressLint("SetJavaScriptEnabled")
     private fun initWebSettings() {
         val settings = webView?.settings
-        if (settings == null) return
+        if (settings == null)
+            return
         settings.javaScriptEnabled = true
         settings.domStorageEnabled = true
         settings.mediaPlaybackRequiresUserGesture = false
         settings.allowContentAccess = true
         settings.allowFileAccess = true
-        val versionName = getVersionName()
-        settings.userAgentString += "/AndroidNative/$versionName/"
-
         if (BuildConfig.DEBUG) {
-            // デバッグ時にはキャッシュを無効に。
             settings.cacheMode = WebSettings.LOAD_NO_CACHE
-            // Webデバッグを有効に。
             WebView.setWebContentsDebuggingEnabled(true)
         }
+        val versionName = getVersionName()
+        settings.userAgentString += "/KraKra-native-app/$versionName/"
     }
 
-    // バージョン名を取得。
     private fun getVersionName(): String {
         val appName: String = this.packageName
         val pm: PackageManager = this.packageManager
@@ -221,7 +260,6 @@ class MainActivity : AppCompatActivity() {
         return pi.versionName
     }
 
-    // WebView初期化スレッド。
     class WebViewThread(private val activity: MainActivity) : Thread() {
         override fun run() {
             Process.setThreadPriority(Process.THREAD_PRIORITY_MORE_FAVORABLE)

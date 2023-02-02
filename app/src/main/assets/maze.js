@@ -1,5 +1,5 @@
 // バージョン情報。
-const MAZE_VERSION = '0.0.7';
+const MAZE_VERSION = '0.0.8';
 const DEBUGGING = false;
 
 // マップの構成要素。
@@ -373,9 +373,9 @@ function getRouteTurns(map)
 }
 
 // 可能ならばトーストを表示する。
-function showToast(text, isLong = false){
+function makeToast(text, typeOfToast){
     try{
-        AndroidNative.showToast(text, isLong);
+        AndroidNative.makeToast(text, typeOfToast);
         return true;
     }catch(e){
         return false;
@@ -383,15 +383,15 @@ function showToast(text, isLong = false){
 }
 
 // トーストかalert。
-function showToastOrAlert(text, isLong = false){
-    if (!showToast(text, isLong))
+function makeToastOrAlert(text, typeOfToast){
+    if (!makeToast(text, typeOfToast))
         alert(text);
 }
 
 // 可能ならばSnackbarを表示する。
-function showSnackbar(text, isLong = false){
+function makeSnackbar(text, typeOfSnack){
     try{
-        AndroidNative.showSnackbar(text, isLong);
+        AndroidNative.makeSnackbar(text, typeOfSnack);
         return true;
     }catch(e){
         return false;
@@ -399,8 +399,8 @@ function showSnackbar(text, isLong = false){
 }
 
 // Snackbarかalert。
-function showSnackbarOrAlert(text, isLong = false){
-    if (!showSnackbar(text, isLong))
+function makeSnackbarOrAlert(text, typeOfSnack){
+    if (!makeSnackbar(text, typeOfSnack))
         alert(text);
 }
 
@@ -553,6 +553,7 @@ function main()
     if (localStorage.getItem('stage')){
         stage = parseInt(localStorage.getItem('stage'));
     }
+    // デバッグ用の設定。
     if (DEBUGGING && false){
         stage = 51;
         localStorage.setItem('key', '1');
@@ -822,7 +823,7 @@ function main()
                 delta_iy = 0;
             }
             if (!localStorage.getItem('key') && ch == MAP_DOOR){
-                showSnackbarOrAlert("ドアのカギが開かない!", true);
+                makeSnackbarOrAlert("ドアのカギが開かない!", 1);
                 delta_ix = delta_iy = 0;
 
                 // ボタンの状態を初期化する。
@@ -849,7 +850,7 @@ function main()
                 if (ix == key_ix && iy == key_iy){
                     key_ix = key_iy = -1;
                     localStorage.setItem('key', '1');
-                    showSnackbarOrAlert("ドアのカギを手に入れた", true);
+                    makeSnackbarOrAlert("ドアのカギを手に入れた", 1);
 
                     // ボタンの状態を初期化する。
                     resetButtons();

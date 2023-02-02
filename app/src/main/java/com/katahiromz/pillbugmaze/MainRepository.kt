@@ -22,6 +22,16 @@ class MainRepository {
             return context.getSharedPreferences(MainPrefFileKey, Context.MODE_PRIVATE)
         }
 
+        // 設定を初期化する。
+        fun clear(context: Context) {
+            // TODO: 設定項目の初期化。
+            myFloat = 0.0f
+            myInt = 0
+            myList.clear()
+
+            save(context)
+        }
+
         // 設定を読み込む。
         fun load(context: Context) {
             val prefs = getPreferences(context)
