@@ -373,9 +373,9 @@ function getRouteTurns(map)
 }
 
 // 可能ならばトーストを表示する。
-function makeToast(text, typeOfToast){
+function showToast(text, typeOfToast){
     try{
-        AndroidNative.makeToast(text, typeOfToast);
+        AndroidNative.showToast(text, typeOfToast);
         return true;
     }catch(e){
         return false;
@@ -383,15 +383,15 @@ function makeToast(text, typeOfToast){
 }
 
 // トーストかalert。
-function makeToastOrAlert(text, typeOfToast){
-    if (!makeToast(text, typeOfToast))
+function showToastOrAlert(text, typeOfToast){
+    if (!showToast(text, typeOfToast))
         alert(text);
 }
 
 // 可能ならばSnackbarを表示する。
-function makeSnackbar(text, typeOfSnack){
+function showSnackbar(text, typeOfSnack){
     try{
-        AndroidNative.makeSnackbar(text, typeOfSnack);
+        AndroidNative.showSnackbar(text, typeOfSnack);
         return true;
     }catch(e){
         return false;
@@ -399,8 +399,8 @@ function makeSnackbar(text, typeOfSnack){
 }
 
 // Snackbarかalert。
-function makeSnackbarOrAlert(text, typeOfSnack){
-    if (!makeSnackbar(text, typeOfSnack))
+function showSnackbarOrAlert(text, typeOfSnack){
+    if (!showSnackbar(text, typeOfSnack))
         alert(text);
 }
 
@@ -823,7 +823,7 @@ function main()
                 delta_iy = 0;
             }
             if (!localStorage.getItem('key') && ch == MAP_DOOR){
-                makeSnackbarOrAlert("ドアのカギが開かない!", 1);
+                showSnackbarOrAlert("ドアのカギが開かない!", 1);
                 delta_ix = delta_iy = 0;
 
                 // ボタンの状態を初期化する。
@@ -850,7 +850,7 @@ function main()
                 if (ix == key_ix && iy == key_iy){
                     key_ix = key_iy = -1;
                     localStorage.setItem('key', '1');
-                    makeSnackbarOrAlert("ドアのカギを手に入れた", 1);
+                    showSnackbarOrAlert("ドアのカギを手に入れた", 1);
 
                     // ボタンの状態を初期化する。
                     resetButtons();

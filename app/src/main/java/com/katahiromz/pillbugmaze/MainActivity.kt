@@ -31,11 +31,11 @@ class MainActivity : AppCompatActivity(), ValueCallback<String>,
 
     // Constants
     companion object {
-        // Toast types (for makeToast)
+        // Toast types (for showToast)
         const val SHORT_TOAST = 0
         const val LONG_TOAST = 1
 
-        // Snack types (for makeSnackbar)
+        // Snack types (for showSnackbar)
         const val SHORT_SNACK = 0
         const val LONG_SNACK = 1
         const val ACTION_SNACK_OK = 2
@@ -44,7 +44,7 @@ class MainActivity : AppCompatActivity(), ValueCallback<String>,
 
     // Display Toast (a messaging control)
     @JavascriptInterface
-    fun makeToast(text: String, typeOfToast: Int) {
+    fun showToast(text: String, typeOfToast: Int) {
         when (typeOfToast) {
             SHORT_TOAST -> {
                 lastToast = Toast.makeText(this, text, Toast.LENGTH_SHORT)
@@ -70,7 +70,7 @@ class MainActivity : AppCompatActivity(), ValueCallback<String>,
 
     // Display Snackbar (another messaging control)
     @JavascriptInterface
-    fun makeSnackbar(text: String, typeOfSnack: Int) {
+    fun showSnackbar(text: String, typeOfSnack: Int) {
         val view = findViewById<View>(android.R.id.content)
         when (typeOfSnack) {
             SHORT_SNACK -> {
@@ -126,7 +126,7 @@ class MainActivity : AppCompatActivity(), ValueCallback<String>,
                 //webView?.reload()
             } else {
                 // Permission request was denied.
-                makeSnackbar(getString(R.string.no_permissions), ACTION_SNACK_OK)
+                showSnackbar(getString(R.string.no_permissions), ACTION_SNACK_OK)
             }
         }
         // TODO: Add more request
@@ -222,11 +222,11 @@ class MainActivity : AppCompatActivity(), ValueCallback<String>,
                 override fun onChromePermissionRequest(permissions: Array<String>, requestCode: Int) {
                     requestPermissions(permissions, requestCode)
                 }
-                override fun makeToast(text: String, typeOfToast: Int) {
-                    this.makeToast(text, typeOfToast)
+                override fun showToast(text: String, typeOfToast: Int) {
+                    this.showToast(text, typeOfToast)
                 }
-                override fun makeSnackbar(text: String, typeOfSnack: Int) {
-                    this.makeSnackbar(text, typeOfSnack)
+                override fun showSnackbar(text: String, typeOfSnack: Int) {
+                    this.showSnackbar(text, typeOfSnack)
                 }
             })
             webView?.webChromeClient = chromeClient
