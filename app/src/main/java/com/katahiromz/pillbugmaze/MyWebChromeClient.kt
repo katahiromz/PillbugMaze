@@ -12,13 +12,11 @@ import com.afollestad.materialdialogs.lifecycle.lifecycleOwner
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import timber.log.Timber
 
+const val MY_WEBVIEW_REQUEST_CODE_01 = 999
+// TODO: Add more request
+
 class MyWebChromeClient(private val activity: AppCompatActivity, private val listener: Listener) :
     WebChromeClient() {
-
-    companion object {
-        const val MY_WEBVIEW_REQUEST_CODE_01 = 999
-        // TODO: Add more request
-    }
 
     interface Listener {
         fun onChromePermissionRequest(permissions: Array<String>, requestCode: Int)

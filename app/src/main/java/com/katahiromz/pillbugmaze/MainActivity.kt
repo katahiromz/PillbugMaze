@@ -17,29 +17,30 @@ import com.google.android.material.snackbar.Snackbar
 import java.util.*
 import timber.log.Timber
 
+/////////////////////////////////////////////////////////////////////
+// Constants
+
+// Toast types (for showToast)
+const val SHORT_TOAST = 0
+const val LONG_TOAST = 1
+
+// Snack types (for showSnackbar)
+const val SHORT_SNACK = 0
+const val LONG_SNACK = 1
+const val ACTION_SNACK_OK = 2
+// TODO: Add more snack
+
 class MainActivity : AppCompatActivity(), ValueCallback<String>,
         ActivityCompat.OnRequestPermissionsResultCallback {
     /////////////////////////////////////////////////////////////////////
     // Common
+    /////////////////////////////////////////////////////////////////////
 
     // Use Timber for debugging log
     fun initTimber() {
         if (BuildConfig.DEBUG) {
             Timber.plant(Timber.DebugTree())
         }
-    }
-
-    // Constants
-    companion object {
-        // Toast types (for showToast)
-        const val SHORT_TOAST = 0
-        const val LONG_TOAST = 1
-
-        // Snack types (for showSnackbar)
-        const val SHORT_SNACK = 0
-        const val LONG_SNACK = 1
-        const val ACTION_SNACK_OK = 2
-        // TODO: Add more snack
     }
 
     // Display Toast (a messaging control)
@@ -114,7 +115,7 @@ class MainActivity : AppCompatActivity(), ValueCallback<String>,
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         var grantedAll = true
         // Audio request
-        if (requestCode == MyWebChromeClient.MY_WEBVIEW_REQUEST_CODE_01) {
+        if (requestCode == MY_WEBVIEW_REQUEST_CODE_01) {
             for (result in grantResults) {
                 if (result != PackageManager.PERMISSION_GRANTED) {
                     grantedAll = false
