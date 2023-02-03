@@ -61,7 +61,9 @@ class MainActivity : AppCompatActivity(), ValueCallback<String>,
             }
         }
     }
-    var lastToast : Toast? = null
+
+    var lastToast: Toast? = null
+
     // Cancel Toast
     fun cancelToast() {
         if (lastToast != null) {
@@ -97,7 +99,8 @@ class MainActivity : AppCompatActivity(), ValueCallback<String>,
             }
         }
     }
-    var lastSnackbar : Snackbar? = null
+
+    var lastSnackbar: Snackbar? = null
     fun cancelSnackbar() {
         if (lastSnackbar != null) {
             lastSnackbar?.dismiss()
@@ -109,9 +112,9 @@ class MainActivity : AppCompatActivity(), ValueCallback<String>,
     // Permissions-related
 
     override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<String>,
-        grantResults: IntArray
+            requestCode: Int,
+            permissions: Array<String>,
+            grantResults: IntArray
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         var grantedAll = true
@@ -145,8 +148,7 @@ class MainActivity : AppCompatActivity(), ValueCallback<String>,
         supportActionBar?.hide()
 
         // Initialize WebView
-        webViewThread = WebViewThread(this)
-        webViewThread?.start()
+        initWebView()
 
         // Initialize Timber
         initTimber()
@@ -186,6 +188,7 @@ class MainActivity : AppCompatActivity(), ValueCallback<String>,
     override fun onReceiveValue(value: String) {
         resultString = value
     }
+
     private var resultString = ""
 
     /////////////////////////////////////////////////////////////////////
@@ -193,7 +196,6 @@ class MainActivity : AppCompatActivity(), ValueCallback<String>,
 
     private var webView: WebView? = null
     private var chromeClient: MyWebChromeClient? = null
-    private var webViewThread: WebViewThread? = null
 
     private fun initWebView() {
         webView = findViewById(R.id.web_view)
@@ -228,16 +230,14 @@ class MainActivity : AppCompatActivity(), ValueCallback<String>,
     }
 
     private fun initWebViewClient() {
-        webView?.webViewClient = MyWebViewClient(object: MyWebViewClient.Listener {
+        webView?.webViewClient = MyWebViewClient(object : MyWebViewClient.Listener {
             override fun onReceivedError(view: WebView?, request: WebResourceRequest?,
-                                         error: WebResourceError?)
-            {
+                                         error: WebResourceError?) {
                 Timber.i("onReceivedError")
             }
 
             override fun onReceivedHttpError(view: WebView?, request: WebResourceRequest?,
-                                             errorResponse: WebResourceResponse?)
-            {
+                                             errorResponse: WebResourceResponse?) {
                 Timber.i("onReceivedHttpError")
             }
 
@@ -248,7 +248,7 @@ class MainActivity : AppCompatActivity(), ValueCallback<String>,
     }
 
     private fun initChromeClient() {
-        chromeClient = MyWebChromeClient(this, object: MyWebChromeClient.Listener {
+        chromeClient = MyWebChromeClient(this, object : MyWebChromeClient.Listener {
             override fun onChromePermissionRequest(permissions: Array<String>, requestCode: Int) {
                 requestPermissions(permissions, requestCode)
             }
@@ -279,12 +279,5 @@ class MainActivity : AppCompatActivity(), ValueCallback<String>,
         val pm: PackageManager = this.packageManager
         val pi: PackageInfo = pm.getPackageInfo(appName, PackageManager.GET_META_DATA)
         return pi.versionName
-    }
-
-    class WebViewThread(private val activity: MainActivity) : Thread() {
-        override fun run() {
-            Process.setThreadPriority(Process.THREAD_PRIORITY_MORE_FAVORABLE)
-            activity.initWebView()
-        }
     }
 }
