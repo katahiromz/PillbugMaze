@@ -65,6 +65,7 @@ class MainActivity : AppCompatActivity(), ValueCallback<String>,
     var lastToast: Toast? = null
 
     // Cancel Toast
+    @JavascriptInterface
     fun cancelToast() {
         if (lastToast != null) {
             lastToast?.cancel()
@@ -101,6 +102,8 @@ class MainActivity : AppCompatActivity(), ValueCallback<String>,
     }
 
     var lastSnackbar: Snackbar? = null
+
+    @JavascriptInterface
     fun cancelSnackbar() {
         if (lastSnackbar != null) {
             lastSnackbar?.dismiss()
