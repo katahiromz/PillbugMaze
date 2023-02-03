@@ -8,6 +8,7 @@ import android.os.Bundle
 import android.os.Process
 import android.view.View
 import android.webkit.*
+import android.widget.ProgressBar
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
@@ -194,50 +195,22 @@ class MainActivity : AppCompatActivity(), ValueCallback<String>,
     private var chromeClient: MyWebChromeClient? = null
     private var webViewThread: WebViewThread? = null
 
-    fun initWebView() {
+    private fun initWebView() {
         webView = findViewById(R.id.web_view)
         webView?.post {
-            webView?.setBackgroundColor(0)
             initWebSettings()
         }
         webView?.post {
-            webView?.webViewClient = MyWebViewClient(object: MyWebViewClient.Listener {
-                override fun onReceivedError(view: WebView?, request: WebResourceRequest?,
-                                             error: WebResourceError?)
-                {
-                    Timber.i("onReceivedError")
-                }
-
-                override fun onReceivedHttpError(view: WebView?, request: WebResourceRequest?,
-                                                 errorResponse: WebResourceResponse?)
-                {
-                    Timber.i("onReceivedHttpError")
-                }
-
-                override fun onPageFinished(view: WebView?, url: String?) {
-                    Timber.i("onPageFinished")
-                }
-            })
-
-            chromeClient = MyWebChromeClient(this, object: MyWebChromeClient.Listener {
-                override fun onChromePermissionRequest(permissions: Array<String>, requestCode: Int) {
-                    requestPermissions(permissions, requestCode)
-                }
-                override fun showToast(text: String, typeOfToast: Int) {
-                    this.showToast(text, typeOfToast)
-                }
-                override fun showSnackbar(text: String, typeOfSnack: Int) {
-                    this.showSnackbar(text, typeOfSnack)
-                }
-            })
-            webView?.webChromeClient = chromeClient
-            webView?.addJavascriptInterface(this, "AndroidNative")
-            webView?.loadUrl(getString(R.string.url))
+            initWebViewClient()
+        }
+        webView?.post {
+            initChromeClient()
         }
     }
 
     @SuppressLint("SetJavaScriptEnabled")
     private fun initWebSettings() {
+        webView?.setBackgroundColor(0)
         val settings = webView?.settings
         if (settings == null)
             return
@@ -252,6 +225,53 @@ class MainActivity : AppCompatActivity(), ValueCallback<String>,
         }
         val versionName = getVersionName()
         settings.userAgentString += "/KraKra-native-app/$versionName/"
+    }
+
+    private fun initWebViewClient() {
+        webView?.webViewClient = MyWebViewClient(object: MyWebViewClient.Listener {
+            override fun onReceivedError(view: WebView?, request: WebResourceRequest?,
+                                         error: WebResourceError?)
+            {
+                Timber.i("onReceivedError")
+            }
+
+            override fun onReceivedHttpError(view: WebView?, request: WebResourceRequest?,
+                                             errorResponse: WebResourceResponse?)
+            {
+                Timber.i("onReceivedHttpError")
+            }
+
+            override fun onPageFinished(view: WebView?, url: String?) {
+                Timber.i("onPageFinished")
+            }
+        })
+    }
+
+    private fun initChromeClient() {
+        chromeClient = MyWebChromeClient(this, object: MyWebChromeClient.Listener {
+            override fun onChromePermissionRequest(permissions: Array<String>, requestCode: Int) {
+                requestPermissions(permissions, requestCode)
+            }
+
+            override fun onShowToast(text: String, typeOfToast: Int) {
+                showToast(text, typeOfToast)
+            }
+
+            override fun onShowSnackbar(text: String, typeOfSnack: Int) {
+                showSnackbar(text, typeOfSnack)
+            }
+
+            override fun onChromeProgressChanged(view: WebView?, newProgress: Int) {
+                val bar: ProgressBar = findViewById(R.id.progressBar)
+                bar.progress = newProgress
+                if (newProgress == 100) {
+                    bar.visibility = View.INVISIBLE
+                }
+            }
+        })
+        webView?.webChromeClient = chromeClient
+        webView?.addJavascriptInterface(this, "AndroidNative")
+        webView?.loadUrl(getString(R.string.url))
     }
 
     private fun getVersionName(): String {

@@ -19,4 +19,16 @@
 
     </WebView>
 
+    <ProgressBar
+        android:id="@+id/progressBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:contentDescription="@string/progress_bar"
+        android:max="100"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        style="@android:style/Widget.ProgressBar.Large"/>
+
 </androidx.constraintlayout.widget.ConstraintLayout>

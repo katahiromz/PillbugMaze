@@ -20,12 +20,17 @@ class MyWebChromeClient(private val activity: AppCompatActivity, private val lis
 
     interface Listener {
         fun onChromePermissionRequest(permissions: Array<String>, requestCode: Int)
-        fun showToast(text: String, typeOfToast: Int)
-        fun showSnackbar(text: String, typeOfSnack: Int)
+        fun onShowToast(text: String, typeOfToast: Int)
+        fun onShowSnackbar(text: String, typeOfSnack: Int)
+        fun onChromeProgressChanged(view: WebView?, newProgress: Int)
     }
 
     private fun getResString(resId: Int): String {
         return activity.getString(resId)
+    }
+
+    override fun onProgressChanged(view: WebView?, newProgress: Int) {
+        listener.onChromeProgressChanged(view, newProgress)
     }
 
     /////////////////////////////////////////////////////////////////////
