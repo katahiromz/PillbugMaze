@@ -13,4 +13,12 @@
         <item name="android:statusBarColor" tools:targetApi="l">?attr/colorPrimaryVariant</item>
         <!-- Customize your theme here. -->
     </style>
+    <!-- Splash theme -->
+    <style name="Theme.PillbugMaze.Splash" parent="Theme.SplashScreen.IconBackground">
+        <item name="windowSplashScreenBackground">@color/black</item>
+        <!-- <item name="windowSplashScreenIconBackgroundColor">@color/black</item> -->
+        <item name="windowSplashScreenAnimatedIcon">@mipmap/ic_launcher</item>
+        <!-- <item name="windowSplashScreenAnimationDuration">0</item> -->
+        <item name="postSplashScreenTheme">@style/Theme.PillbugMaze</item>
+    </style>
 </resources>
