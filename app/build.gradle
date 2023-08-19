@@ -10,9 +10,9 @@ android {
     defaultConfig {
         applicationId "com.katahiromz.pillbugmaze"
         minSdkVersion 28
-        targetSdkVersion 31
-        versionCode 103
-        versionName "1.0.3"
+        targetSdkVersion 33
+        versionCode 104
+        versionName "1.0.4"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
