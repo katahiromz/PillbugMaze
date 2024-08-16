@@ -1,14 +1,10 @@
 package com.katahiromz.pillbugmaze
 
-import android.Manifest
-import android.util.Log
+import android.text.InputType
 import android.webkit.*
+import android.widget.EditText
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.app.ActivityCompat.shouldShowRequestPermissionRationale
-import androidx.core.content.PermissionChecker
-import com.afollestad.materialdialogs.MaterialDialog
-import com.afollestad.materialdialogs.input.input
-import com.afollestad.materialdialogs.lifecycle.lifecycleOwner
+import androidx.appcompat.app.AlertDialog
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import timber.log.Timber
 
@@ -37,31 +33,8 @@ class MyWebChromeClient(private val activity: AppCompatActivity, private val lis
     // Permissions-related
 
     override fun onPermissionRequest(request: PermissionRequest?) {
-        if (false) {
-            // Audio record request
-            val audioCheck =
-                    PermissionChecker.checkSelfPermission(activity, Manifest.permission.RECORD_AUDIO)
-            when (audioCheck) {
-                PermissionChecker.PERMISSION_GRANTED,
-                PermissionChecker.PERMISSION_DENIED_APP_OP -> {
-                    request?.grant(request.resources)
-                }
-                PermissionChecker.PERMISSION_DENIED -> {
-                    val audioRational =
-                            shouldShowRequestPermissionRationale(
-                                    activity, Manifest.permission.RECORD_AUDIO)
-                    if (audioRational) {
-                        listener.onChromePermissionRequest(
-                                arrayOf(Manifest.permission.RECORD_AUDIO),
-                                MY_WEBVIEW_REQUEST_CODE_01)
-                    }
-                }
-                else -> {
-                    require(false, { "PermissionChecker" })
-                }
-            }
-        }
         // TODO: Add more request
+        super.onPermissionRequest(request)
     }
 
     /////////////////////////////////////////////////////////////////////
@@ -77,14 +50,16 @@ class MyWebChromeClient(private val activity: AppCompatActivity, private val lis
         // MaterialAlertDialogを使用して実装する。
         val title = getResString(R.string.app_name)
         val ok_text = getResString(R.string.ok)
-        MaterialAlertDialogBuilder(activity)
+        modalDialog = MaterialAlertDialogBuilder(activity!!)
             .setTitle(title)
             .setMessage(message)
             .setPositiveButton(ok_text) { _, _ ->
                 result?.confirm()
+                modalDialog = null
             }
             .setCancelable(false)
-            .show()
+            .create()
+        modalDialog?.show()
         return true
     }
 
@@ -97,23 +72,26 @@ class MyWebChromeClient(private val activity: AppCompatActivity, private val lis
     ): Boolean {
         // MaterialAlertDialogを使用して実装する。
         val title = getResString(R.string.app_name)
-        val ok_text = getResString(R.string.ok)
-        val cancel_text = getResString(R.string.cancel)
-        MaterialAlertDialogBuilder(activity)
+        val okText = getResString(R.string.ok)
+        val cancelText = getResString(R.string.cancel)
+        modalDialog = MaterialAlertDialogBuilder(activity!!)
             .setTitle(title)
             .setMessage(message)
-            .setPositiveButton(ok_text) { _, _ ->
+            .setPositiveButton(okText) { _, _ ->
                 result?.confirm()
+                modalDialog = null
             }
-            .setNegativeButton(cancel_text) { _, _ ->
+            .setNegativeButton(cancelText) { _, _ ->
                 result?.cancel()
+                modalDialog = null
             }
             .setCancelable(false)
-            .show()
+            .create()
+        modalDialog?.show()
         return true
     }
 
-    private var modalDialog: MaterialDialog? = null
+    private var modalDialog: AlertDialog? = null
     fun onResume() {
         if (modalDialog != null)
             modalDialog?.show()
@@ -128,25 +106,26 @@ class MyWebChromeClient(private val activity: AppCompatActivity, private val lis
         result: JsPromptResult?
     ): Boolean {
         val title = getResString(R.string.app_name)
-        var inputtedText: String? = null
-        modalDialog = MaterialDialog(activity).show {
-            title(text = title)
-            message(text = message)
-            input(hint = getResString(R.string.prompt_hint), prefill = defaultValue) { _, text ->
-                inputtedText = text.toString()
-            }
-            positiveButton(text = getResString(R.string.ok)) {
-                result?.confirm(inputtedText ?: "")
+        val okText = getResString(R.string.ok)
+        val cancelText = getResString(R.string.cancel)
+        val input = EditText(activity!!)
+        input.inputType = InputType.TYPE_CLASS_TEXT
+        input.setText(if (defaultValue != null) defaultValue else "")
+        modalDialog = MaterialAlertDialogBuilder(activity!!)
+            .setTitle(title)
+            .setMessage(message)
+            .setView(input)
+            .setPositiveButton(okText) { _, _ ->
+                result?.confirm(input.text.toString())
                 modalDialog = null
             }
-            negativeButton(text = getResString(R.string.cancel)) {
+            .setNegativeButton(cancelText) { _, _ ->
                 result?.cancel()
                 modalDialog = null
             }
-            cancelable(false)
-            cancelOnTouchOutside(false)
-            lifecycleOwner(activity)
-        }
+            .setCancelable(false)
+            .create()
+        modalDialog?.show()
         return true
     }
 
